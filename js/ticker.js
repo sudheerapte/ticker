@@ -12,6 +12,9 @@ const NodeType = {
    The root node's children are "0.0", "0.1", etc.
    The children of "0.0" are "0.0.0", "0.0.1", etc.
    The tenth child of "0.0" is "0.0.10".
+
+   The "traverseAll" method enumerates all the nodes in
+   depth-first fashion.
 */
 
 class Ticker {
@@ -31,14 +34,14 @@ class Ticker {
   getType(id) {
     return this._types[id];
   }
-  getChildren(id) {
+  getNumChildren(id) {
     const n = this._children[id];
     return n ? n : 0;
   }
   getChild(id, i) {
     const n = this._children[id];
     if (n) {
-      if (i >= 0 && i < this.getChildren(id)) {
+      if (i >= 0 && i < this.getNumChildren(id)) {
         return `${id}.${i}`;
       }
     } else {
@@ -58,8 +61,8 @@ class Ticker {
     }
   }
 
-  // addNode: add a child to the end
-  addNode(nodetype, parent, index) {
+  // addNode: add a child to the end; return its new ID
+  addNode(nodetype, parent) {
     if (! Object.values(NodeType).includes(nodetype)) {
       throw(`addNode: bad node type ${nodetype}`);
     }
@@ -68,17 +71,17 @@ class Ticker {
     } else if (this.getType(parent) === NodeType.Simple) {
       throw(`addNode: parent cannot be ${NodeType.Simple}`);
     }
-    const children = this.getChildren(parent);
+    const children = this.getNumChildren(parent);
     const newNode = `${parent}.${children}`;
     this._types[newNode] = nodetype;
     this._nodes.push(newNode);
-    this._children[parent] = this.getChildren(parent) + 1;
+    this._children[parent] = this.getNumChildren(parent) + 1;
     return newNode;
   }
   traverseAll(id, arr) {
     arr.push(id);
     if (this.getType(id) !== NodeType.Simple) {
-      const children = this.getChildren(id);
+      const children = this.getNumChildren(id);
       for (let c = 0; c<children; c++) {
         this.traverseAll(this.getChild(id, c), arr);
       }
