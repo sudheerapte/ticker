@@ -4,41 +4,31 @@ const [err] = require('./util.js')
 const ticker = require('../ticker.js');
 
 let arr = [];
-ticker.traverseAll(1, arr);
+ticker.traverseAll("0", arr);
 if (arr.length !== 1) {
   err(`arr = ${arr}`);
 }
-// console.log(`arr = ${JSON.stringify(arr)}`);
 
 /**
    construct:
-     1
-     +-2,     3
-       +-4,6  +-5
+     0
+     +-0.0,            0.1
+       +-0.0.0, 0.0.1  +-0.1.0
 */
 
-const parents = {2: 1, 3: 1, 4: 2, 6: 2, 5: 3};
+const two = ticker.addNode('Parallel', "0");
+err(two === "0.0");
+const three = ticker.addNode('Parallel', "0");
+err(three === "0.1");
 
-console.log(`adding child 2`);
-const two = ticker.addNode('Parallel', 1, 0);
-console.log(`two = ${two}`);
-err(two === 2);
-console.log(`adding child 3`);
-const three = ticker.addNode('Parallel', 1, 0);
-err(three === 3);
+ticker.addNode('Simple', "0.0");
+const c010 = ticker.addNode('Simple', "0.1");
+err(c010 === "0.1.0");
+ticker.addNode('Simple', "0.0");
+
 arr = [];
-ticker.traverseAll(1, arr);
-console.log(`arr = ${JSON.stringify(arr)}`);
-
-
-for (let i=4; i<7; i++) {
-  console.log(`adding child ${i} to ${parents[i]}`);
-  const n = ticker.addNode('Simple', parents[i], 0);
-  arr = [];
-  ticker.traverseAll(1, arr);
-  console.log(`arr = ${JSON.stringify(arr)}`);
-  if (arr.length !== i) {
-    err(`arr = ${JSON.stringify(arr)}`);
-  }
+ticker.traverseAll("0", arr);
+if (arr.length !== 6) {
+  err(`bad: ${JSON.stringify(arr)}`);
 }
 

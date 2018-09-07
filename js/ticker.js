@@ -6,74 +6,82 @@ const NodeType = {
   Parallel: 'Parallel',
 };
 
+/**
+   Node IDs are assigned based on position in the tree.
+   The root node itself is assigned "0".
+   The root node's children are "0.0", "0.1", etc.
+   The children of "0.0" are "0.0.0", "0.0.1", etc.
+   The tenth child of "0.0" is "0.0.10".
+*/
+
 class Ticker {
   constructor() {
-    this._rootNode = 1; // ID of root node is always 1
-    this._maxId = 1;  // how many nodes exist
-    this._nextActiveNode = 0;
-    this._activeNodes = [];
-    this._children = { 1: [], }; // children of node ID
-    this._types = { 1: NodeType.Parallel, };
+    this._nodes = [ "0", ]; // ID of root node is always "0"
+    this._types = { "0": NodeType.Parallel, }; // root node is parallel
+    this._children = {}; // number of children
   }
-  // addNode: index is the child position where to insert
+
+  exists(id) {
+    if (typeof id !== 'string') {
+      throw(`exists: bad id: ${JSON.stringify(id)}`);
+    } else {
+      return this._nodes.includes(id);
+    }
+  }
+  getType(id) {
+    return this._types[id];
+  }
+  getChildren(id) {
+    const n = this._children[id];
+    return n ? n : 0;
+  }
+  getChild(id, i) {
+    const n = this._children[id];
+    if (n) {
+      if (i >= 0 && i < this.getChildren(id)) {
+        return `${id}.${i}`;
+      }
+    } else {
+      return undefined;
+    }
+  }
+  getParent(id) {
+    if (id && typeof id === 'string') {
+      if (id.match(/^\d+\.[\d.]+$/)) {
+        const m = id.match(/^([\d.]+)\.\d+$/);
+        if (m) {
+          return m[1];
+        } else {
+          return "";
+        }
+      }
+    }
+  }
+
+  // addNode: add a child to the end
   addNode(nodetype, parent, index) {
     if (! Object.values(NodeType).includes(nodetype)) {
       throw(`addNode: bad node type ${nodetype}`);
     }
-    if (! this._maxId >= parent) {
+    if (! this.exists(parent)) {
       throw(`addNode: bad parent ${parent}`);
     } else if (this.getType(parent) === NodeType.Simple) {
       throw(`addNode: parent cannot be ${NodeType.Simple}`);
     }
-    const n = ++ this._maxId;
-    this._types[n] = nodetype;
-    if (nodetype !== NodeType.Simple) {
-      this._children[n] = [];
-    }
-    const entry = this._children[parent];
-    if (entry && Array.isArray(entry)) {
-      if (index >= 0 && index <= entry.length) {
-        // this._children[parent].splice(index, 0, n);
-        this._children[parent].push(n);
-      } else {
-        throw(`addNode: bad index ${index}`);
+    const children = this.getChildren(parent);
+    const newNode = `${parent}.${children}`;
+    this._types[newNode] = nodetype;
+    this._nodes.push(newNode);
+    this._children[parent] = this.getChildren(parent) + 1;
+    return newNode;
+  }
+  traverseAll(id, arr) {
+    arr.push(id);
+    if (this.getType(id) !== NodeType.Simple) {
+      const children = this.getChildren(id);
+      for (let c = 0; c<children; c++) {
+        this.traverseAll(this.getChild(id, c), arr);
       }
-    }
-    return n;
-  }
-  getType(n) {
-    return this._types[n];
-  }
-  getParent(n) {
-    return this._children.findIndex( (i,arr) => arr.includes(n) );
-  }
-  getChildren(n) {
-    return this._children[n];
-  }
-  nextActiveNode() { return this._nextActiveNode; }
-  toNextActiveNode() {
-    const oldN = this._nextActiveNode;
-    this._nextActiveNode = this.findNextActiveNode();
-    return oldN;
-  }
-  findNextActiveNode() {
-    let pos = this._activeNodes.indexOf(this._nextActiveNode);
-    if (pos < 0) {
-      throw(`failed to find index of ${this._nextActiveNode}`);
-    }
-    pos++;
-    if (pos > this._activeNodes.length) {
-      pos = 0;
-    }
-    return this._activeNodes[pos];
-  }
-  traverseAll(n, arr) {
-    arr.push(n);
-    if (this.getType(n) !== NodeType.Simple) {
-      const children = this.getChildren(n);
-      children.forEach( c => {
-        this.traverseAll(c, arr);
-      });
     }
   }
 }
