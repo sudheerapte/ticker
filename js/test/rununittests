@@ -1,0 +1,30 @@
+#!/bin/sh -e
+die() { echo "$@"; exit 1 ; }
+
+this=$(readlink -f ${0} )
+here=$(dirname "${this}")
+this=$(basename "${this}")
+
+tdir="${here}/out"
+rm -rf "${tdir}"
+mkdir -p "${tdir}"
+
+if [ -z "${OS}" ] ; then
+    NODE="$(find /opt/nodejs -type f -perm /111 -name node -exec dirname {} + | sort -V | tail -1)"/node
+else
+    NODE=$(which node)
+fi
+
+cd ${here}
+if [ "$#" -gt 0 ] ; then
+    tests="$@";
+else
+    echo "Running listed tests in dir ${here}."
+    tests="ticker-test.js"
+fi
+for t in ${tests} ; do
+    echo -n "running ${t}... "
+    [ -z ${DEBUG} ] || echo ""
+    ${NODE} "${t}" && echo "OK" || echo "*** FAILED ***"
+done
+
