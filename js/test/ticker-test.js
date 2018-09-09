@@ -69,7 +69,15 @@ try {
   }
 }
 
-// build replacement list for swapping 0.1.0 with 0.0
+/**
+   swapping 0.1.0 with 0.0:
+   new situation:
+     0
+     +-0.0,        0.1
+                    +-0.1.0
+                        +-0.1.0.0, 0.1.0.1 
+*/
+
 ticker.swapSubtree("0.1.0", "0.0");
 
 if (! ticker.exists("0.1.0.1")) {
@@ -79,8 +87,30 @@ if (ticker.exists("0.0.1")) {
   err("0.0.1 should not exist!");
 }
 
+// Swap them back the way they were
 
-arr = [];
-ticker.traverseAll("0", arr);
-// console.log(JSON.stringify(arr));
+ticker.swapSubtree("0.0", "0.1.0");
 
+if (! ticker.exists("0.0.1")) {
+  err("0.0.1 should exist!");
+}
+if (ticker.exists("0.1.0.1")) {
+  err("0.1.0.1 should not exist!");
+}
+
+let arrFinal = [];
+ticker.traverseAll("0", arrFinal);
+// console.log(`arr final = ${JSON.stringify(arrFinal)}`);
+
+if (! equalArrays(arr, arrFinal)) {
+  err(`arr !== arrFinal!`);
+}
+
+function equalArrays(a, b) {
+  a.forEach( (ea, i) => {
+    if (ea !== b[i]) {
+      err(`equalArrays: ${ea} !== ${b[i]}`);
+    }
+  });
+  return true;
+}
