@@ -1,6 +1,29 @@
 /**
    Use case with main success scenario and optional failure scenarios
 
+   BACKGROUND:
+
+   Primitive actions are of two types:
+
+   "Do" actions:
+
+   "Do" actions take a definite, small time to execute, example: a
+   change of state, or the sending of an output signal. These
+   actions cannot be interrupted once started; they either succeed -
+   or fail.
+
+   "Wait" actions:
+
+   Wait actions sit in wait for external signals or for state
+   predicates to succeed.  Wait actions do nothing until the indicated
+   signal is received or the predicate becomes true; then they
+   succeed.  These actions can take forever, or you can specify a
+   timeout in seconds.  If the external signal is received or the
+   specified state predicate succeeds, then the action succeeds.
+
+
+
+
    Main success scenario is a sequence node, but each failure scenario
    creates a fork at the departure point, and a recovery method at the
    end. Example:
@@ -51,24 +74,6 @@
    input signals received (on signal X), or they are conditions on the
    state associated with the use case (predicate X). More on this
    below.
-
-   Primitive actions are of two types:
-
-   "Do" actions:
-
-   "Do" actions take a definite, small time to execute, example: a
-   change of state, or the sending of an output signal. These
-   actions cannot be interrupted once started; they either succeed -
-   or fail.
-
-   "Wait" actions:
-
-   Wait actions sit in wait for external signals or for state
-   predicates to succeed.  Wait actions do nothing until the indicated
-   signal is received or the predicate becomes true; then they
-   succeed.  These actions can take forever, or you can specify a
-   timeout in seconds.  If the external signal is received or the
-   specified state predicate succeeds, then the action succeeds.
 
    Wait actions can be interrupted by a failure case. Also, you can
    specify a timeout is hit, the action fails. Similar to a timeout,
